@@ -1,0 +1,53 @@
+html, body {
+	font: 14px/1.21 'Helvetica Neue', arial, sans-serif;
+	font-weight: 400;
+}
+
+body {
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+}
+
+header {
+	margin-bottom: 2rem;
+}
+
+main {
+	vertical-align: middle;
+}
+
+.searchBar {
+	display: flex;
+	flex-flow: column nowrap;
+}
+
+.searchBar .result {
+	margin-top: 2rem;
+}
+
+footer {
+	margin-top: 2rem;
+}
+
+h1 {
+	padding: 0;
+	margin: 0;
+}
+
+.input--url {
+	padding: .75rem .75rem;
+	border-radius: .33rem;
+	appearance: none;
+	outline: none;
+	border: 1px solid hsla(0,0%,0%,.25);
+	box-shadow: 0 0 .33rem hsla(0,0%,0%,.1);
+	font-size: 1em;
+	min-width: 250px;
+	width: 500px;
+	max-width: 90vw;
+	margin: 0 auto;
+}
