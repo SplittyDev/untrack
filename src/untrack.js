@@ -23,6 +23,13 @@ export default class Untrack {
         let href = url.toString().replace(/(.*?)\/$/m, '$1')
         href = this._applyAmazonFilter(url, href)
 
+        // Fix double slashes
+        href = href.replace(/.*?:\/{2}/, '')
+        if (href.match(/\/+/g)) {
+            href = href.replace(/\/+/g, '/')
+        }
+        href = `${url.protocol}//${href}`
+
         return href
     }
 
@@ -69,11 +76,6 @@ export default class Untrack {
         // Fix GP
         if (href.match(/.*?amazon\..*?\/gp\/.*?\//i)) {
             href = href.replace(/(.*?amazon\..*?\/gp\/.*?\/)([a-z0-9]+)(.*)/i, '$1$2')
-        }
-
-        // Fix double slashes
-        if (href.match(/\/+/g)) {
-            href = href.replace(/\/+/g, '/')
         }
 
         return href
