@@ -11,10 +11,8 @@ Additionally, we don't use any cookies or ads.
 ## Supported
 ### Tracking Parameters
 
-- google: `utm*`, `gclid`
-- matomo: `pk_campaign`
-- amazon: `m`, `th`, `psc`, `tag`, `ascsubtag`, `pf*`
+%tracking_params%
 
 ### URL Decluttering
 
-- amazon
+%declutter%
