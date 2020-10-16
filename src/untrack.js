@@ -1,94 +1,139 @@
+const Matchers = {
+  google: {
+    match: '*',
+    params: ['utm*', 'gclid'],
+  },
+  amazon: [
+    {
+      match: 'amazon?',
+      params: ['m', 'th', 'psc', 'tag', 'ascsubtag', 'pf*'],
+    },
+    {
+      match: /.*?amazon\..*?\/.*?\/dp\//i,
+      replace: [/(.*?amazon\..*?\/)(.*?)(\/dp\/[a-z0-9]+).*/i, '$1$3'],
+    },
+    {
+      match: /.*?amazon\..*?\/gp\/.*?\//i,
+      replace: [/(.*?amazon\..*?\/gp\/.*?\/)([a-z0-9]+)(.*)/i, '$1$2'],
+    }
+  ],
+}
+
 export default class Untrack {
+  /**
+   * @param {string} url
+   */
+  constructor(url) {
+    this.url = url
+  }
 
-    /**
-     * @param {string} url 
-     */
-    constructor(url) {
-        this.url = url
+  /**
+   * @returns {string}
+   */
+  process() {
+    let url = this._getUrl()
+
+    // On parsing failure, return plain URL
+    if (url === null) {
+      return this.url
     }
 
-    /**
-     * @returns {string}
-     */
-    process() {
-        let url = this._getUrl()
+    let removeParams = []
+    let replaceFuncs = []
 
-        // On parsing failure, return plain URL
-        if (url === null) {
-            return this.url
+    Object.values(Matchers)
+      .map(matcher => (Array.isArray(matcher) ? matcher : [matcher]))
+      .reduce((acc, val) => acc.concat(val), [])
+      .filter(matcher => (
+        matcher.match instanceof RegExp
+        ? matcher.match.test(url.hostname)
+        : this._matchesGlob(url.hostname, matcher.match)
+      ))
+      .forEach(matcher => {
+        if ('params' in matcher) {
+          for (const param of matcher.params) {
+            removeParams.push(param)
+          }
         }
-
-        url = this._removeUtmParams(url)
-
-        let href = url.toString().replace(/(.*?)\/$/m, '$1')
-        href = this._applyAmazonFilter(url, href)
-
-        // Fix double slashes
-        href = href.replace(/.*?:\/{2}/, '')
-        if (href.match(/\/+/g)) {
-            href = href.replace(/\/+/g, '/')
+        if ('replace' in matcher) {
+          const [regex, replace] = matcher.replace
+          replaceFuncs.push((href) => href.replace(regex, replace))
         }
-        href = `${url.protocol}//${href}`
+      })
 
-        return href
+    // Remove parameters
+    console.log(`Removing params: ${removeParams.join(', ')}`)
+    url = this._removeParams(url, removeParams);
+
+    // Apply replacement functions
+    let href = url.toString().replace(/(.*?)\/$/m, "$1");
+    href = replaceFuncs.reduce((acc, func) => func(acc), href)
+
+    // Fix double slashes
+    href = href.replace(/.*?:\/{2}/, "")
+    if (href.match(/\/+/g)) href = href.replace(/\/+/g, "/")
+
+    // Finalize result
+    return `${url.protocol}//${href}`
+  }
+
+  /**
+   * 
+   * @param {string} subject
+   * @param {string} glob
+   * @returns {boolean}
+   */
+  _matchesGlob(subject, glob) {
+    let isMatch = false
+    let matchNoLastChar = glob.substring(0, glob.length - 1)
+    // Match all: *
+    isMatch |= glob == '*'
+    // Match exact: host
+    isMatch |= subject == glob
+    // Match suffix: *host
+    isMatch |= glob.startsWith('*') && subject.endsWith(glob.substring(1))
+    // Match prefix: host*
+    isMatch |= glob.endsWith('*') && subject.startsWith(matchNoLastChar)
+    // Match like: host?
+    isMatch |= glob.endsWith('?') && subject.includes(matchNoLastChar)
+    return isMatch
+  }
+
+  /**
+   * @param {URL} url
+   * @param {string[]} keys
+   * @returns {URL}
+   */
+  _removeParams(url, keys) {
+    let keysToBeRemoved = []
+
+    url.searchParams.forEach((_, key) => {
+      let k = key.toLowerCase();
+      for (let k2 of keys) {
+        if (this._matchesGlob(k, k2)) {
+          keysToBeRemoved.push(key)
+          continue
+        }
+      }
+    })
+
+    for (const key of keysToBeRemoved) {
+      console.log(`Removing ${key}`)
+      url.searchParams.delete(key)
     }
 
-    /**
-     * @param {URL} url
-     * @returns {URL}
-     */
-    _removeUtmParams(url) {
-        let keysToBeRemoved = []
+    url.search = url.searchParams.toString()
+    return url
+  }
 
-        url.searchParams.forEach((_, key) => {
-            let k = key.toLowerCase()
-            let remove = false
-            remove |= k.startsWith("utm")
-            remove |= k === "gclid"
-            if (remove) {
-                keysToBeRemoved.push(key)
-            }
-        })
-
-        for (const key of keysToBeRemoved) {
-            console.log(`Removing ${key}`)
-            url.searchParams.delete(key)
-        }
-
-        url.search = url.searchParams.toString()
-        return url
+  /**
+   * @returns {URL}
+   */
+  _getUrl() {
+    try {
+      return new URL(this.url)
+    } catch {
+      return null
     }
-
-    /**
-     * @param {URL} url
-     * @param {string} href
-     */
-    _applyAmazonFilter(url, href) {
-        // https://www.amazon.de/-/en/foo/dp/B07PHPXHQS?smid=A3JWKAKR8XB7XF&pf_rd_r=R80RVRWZRFGYYKQNGBBE&pf_rd_p=3c78f42a-d704-4818-8bfc-c9e46b44ef25
-        // https://www.amazon.com/foo/dp/B082T62BCF/ref=sr_1_3?dchild=1&keywords=amazonbasics&pf_rd_p=fef24073-2963-4c6b-91ab-bf7eab1c4cac&pf_rd_r=4FPCYYPMP15VS755ER5C&qid=1602711396&sr=8-3
-        // https://www.amazon.com/gp/product/1932700005?pf_rd_r=4FPCYYPMP15VS755ER5C&pf_rd_p=6fc81c8c-2a38-41c6-a68a-f78c79e7253f
-
-        // Fix DP
-        if (href.match(/.*?amazon\..*?\/.*?\/dp\//i)) {
-            href = href.replace(/(.*?amazon\..*?\/)(.*?)(\/dp\/[a-z0-9]+).*/i, '$1$3')
-        }
-
-        // Fix GP
-        if (href.match(/.*?amazon\..*?\/gp\/.*?\//i)) {
-            href = href.replace(/(.*?amazon\..*?\/gp\/.*?\/)([a-z0-9]+)(.*)/i, '$1$2')
-        }
-
-        return href
-    }
-
-    /**
-     * @returns {URL}
-     */
-    _getUrl() {
-        try {
-            return new URL(this.url)
-        } catch {
-            return null
-        }
-    }
+  }
 }
