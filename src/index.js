@@ -24,7 +24,15 @@ const Header = () => (
 
 const Footer = () => (
 	<footer>
-		<span>We do not store any cookies or other data.<br/>URL processing is done on your device.</span>
+		<span>
+			We do not store any cookies or other data.
+			<br/>
+			URL processing is done on your device.
+			<br/>
+			<div class="small">
+				<a href="https://github.com/splittydev/untrack">Fork me on GitHub</a>
+			</div>
+		</span>
 	</footer>
 )
 

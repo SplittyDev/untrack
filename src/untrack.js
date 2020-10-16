@@ -16,6 +16,9 @@ export default class Untrack {
 
     // On parsing failure, return plain URL
     if (url === null) {
+      if (!/https?:/g.test(this.url)) {
+        return `https://${this.url}`
+      }
       return this.url
     }
 
