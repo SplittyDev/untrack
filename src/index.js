@@ -1,6 +1,6 @@
 import './style'
 import { Component } from 'preact'
-import { useState } from 'preact/hooks'
+import { useEffect, useState } from 'preact/hooks'
 import Untrack from './untrack'
 
 export default class App extends Component {
@@ -39,14 +39,19 @@ const Footer = () => (
 )
 
 const SearchBar = () => {
-	let defaultState = window.location.hash ? window.location.hash.substring(1) : null
-	const [url, setUrl] = useState(defaultState || '')
+	const [url, setUrl] = useState('')
 	const [cleanUrl, setCleanUrl] = useState('')
 	const [conversionDone, setConversionDone] = useState(false)
-	if (defaultState !== null) {
-		setCleanUrl(new Untrack(defaultState).process())
-		setConversionDone(true)
-	}
+	
+	useEffect(() => {
+		let defaultState = window.location.hash ? window.location.hash.substring(1) : null
+		if (defaultState !== null) {
+			setUrl(defaultState)
+			setCleanUrl(new Untrack(defaultState).process())
+			setConversionDone(true)
+		}
+	})
+	
 	return (
 		<div class="searchBar">
 			<input class="input--url" value={url} onInput={(e) => {
