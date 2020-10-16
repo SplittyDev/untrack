@@ -3,6 +3,10 @@ const Matchers = {
     match: '*',
     params: ['utm*', 'gclid'],
   },
+  matomo: { // formerly piwik
+    match: '*',
+    params: ['pk_campaign'],
+  },
   amazon: [
     {
       match: 'amazon?',
