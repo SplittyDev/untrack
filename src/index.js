@@ -31,15 +31,22 @@ const Footer = () => (
 			<br/>
 			<div class="small">
 				<a href="https://github.com/splittydev/untrack">Fork me on GitHub</a>
+				&nbsp;|&nbsp;
+				<a href="javascript:window.location='https://untrack.de/#'+window.location.href">Bookmark</a>
 			</div>
 		</span>
 	</footer>
 )
 
 const SearchBar = () => {
-	const [url, setUrl] = useState('')
+	let defaultState = window.location.hash ? window.location.hash.substring(1) : null
+	const [url, setUrl] = useState(defaultState || '')
 	const [cleanUrl, setCleanUrl] = useState('')
 	const [conversionDone, setConversionDone] = useState(false)
+	if (defaultState !== null) {
+		setCleanUrl(new Untrack(defaultState).process())
+		setConversionDone(true)
+	}
 	return (
 		<div class="searchBar">
 			<input class="input--url" value={url} onInput={(e) => {
