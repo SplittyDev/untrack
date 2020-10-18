@@ -19,3 +19,4 @@ Additionally, we don't use any cookies or ads.
 ### URL Decluttering
 
 - amazon
+- ebay
