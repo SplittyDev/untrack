@@ -22,4 +22,8 @@ export const Matchers = {
       replace: [/(.*?amazon\..*?\/gp\/.*?\/)([a-z0-9]+)(.*)/i, "$1$2"],
     },
   ],
+  ebay: {
+      match: "ebay?",
+      params: ['_trkparms', '_trksid'],
+  }
 }

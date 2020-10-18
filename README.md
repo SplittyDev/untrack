@@ -14,6 +14,7 @@ Additionally, we don't use any cookies or ads.
 - google: `utm*`, `gclid`
 - matomo: `pk_campaign`
 - amazon: `m`, `th`, `psc`, `tag`, `ascsubtag`, `pf*`
+- ebay: `_trkparms`, `_trksid`
 
 ### URL Decluttering
 
