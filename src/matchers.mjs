@@ -15,7 +15,7 @@ export const Matchers = {
     },
     {
       match: /.*?amazon\..*?\/.*?\/dp\//i,
-      replace: [/(.*?amazon\..*?\/)(.*?)(\/dp\/[a-z0-9]+).*/i, '$1$3']
+      replace: [/(.*?amazon\..*?\/)(.*?)(\/dp\/[a-z0-9\\-]+).*/i, '$1$3']
     },
     {
       match: /.*?amazon\..*?\/gp\/.*?\//i,
