@@ -1,17 +1,17 @@
-import {Matchers} from './matchers.mjs'
+import { Matchers } from './matchers.mjs'
 
 export default class Untrack {
   /**
    * @param {string} url
    */
-  constructor(url) {
+  constructor (url) {
     this.url = url
   }
 
   /**
    * @returns {string}
    */
-  process() {
+  process () {
     let url = this._getUrl()
 
     // On parsing failure, return plain URL
@@ -22,16 +22,16 @@ export default class Untrack {
       return this.url
     }
 
-    let removeParams = []
-    let replaceFuncs = []
+    const removeParams = []
+    const replaceFuncs = []
 
     Object.values(Matchers)
       .map(matcher => (Array.isArray(matcher) ? matcher : [matcher]))
       .reduce((acc, val) => acc.concat(val), [])
       .filter(matcher => (
         matcher.match instanceof RegExp
-        ? matcher.match.test(url.hostname)
-        : this._matchesGlob(url.hostname, matcher.match)
+          ? matcher.match.test(url.hostname)
+          : this._matchesGlob(url.hostname, matcher.match)
       ))
       .forEach(matcher => {
         if ('params' in matcher) {
@@ -47,33 +47,32 @@ export default class Untrack {
 
     // Remove parameters
     console.log(`Removing params: ${removeParams.join(', ')}`)
-    url = this._removeParams(url, removeParams);
+    url = this._removeParams(url, removeParams)
 
     // Apply replacement functions
-    let href = url.toString().replace(/(.*?)\/$/m, "$1");
+    let href = url.toString().replace(/(.*?)\/$/m, '$1')
     href = replaceFuncs.reduce((acc, func) => func(acc), href)
 
     // Fix double slashes
-    href = href.replace(/.*?:\/{2}/, "")
-    if (href.match(/\/+/g)) href = href.replace(/\/+/g, "/")
+    href = href.replace(/.*?:\/{2}/, '')
+    if (href.match(/\/+/g)) href = href.replace(/\/+/g, '/')
 
     // Finalize result
     return `${url.protocol}//${href}`
   }
 
   /**
-   * 
    * @param {string} subject
    * @param {string} glob
    * @returns {boolean}
    */
-  _matchesGlob(subject, glob) {
+  _matchesGlob (subject, glob) {
     let isMatch = false
-    let matchNoLastChar = glob.substring(0, glob.length - 1)
+    const matchNoLastChar = glob.substring(0, glob.length - 1)
     // Match all: *
-    isMatch |= glob == '*'
+    isMatch |= glob === '*'
     // Match exact: host
-    isMatch |= subject == glob
+    isMatch |= subject === glob
     // Match suffix: *host
     isMatch |= glob.startsWith('*') && subject.endsWith(glob.substring(1))
     // Match prefix: host*
@@ -88,12 +87,12 @@ export default class Untrack {
    * @param {string[]} keys
    * @returns {URL}
    */
-  _removeParams(url, keys) {
-    let keysToBeRemoved = []
+  _removeParams (url, keys) {
+    const keysToBeRemoved = []
 
     url.searchParams.forEach((_, key) => {
-      let k = key.toLowerCase();
-      for (let k2 of keys) {
+      const k = key.toLowerCase()
+      for (const k2 of keys) {
         if (this._matchesGlob(k, k2)) {
           keysToBeRemoved.push(key)
           continue
@@ -113,7 +112,7 @@ export default class Untrack {
   /**
    * @returns {URL}
    */
-  _getUrl() {
+  _getUrl () {
     try {
       return new URL(this.url)
     } catch {
