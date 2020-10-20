@@ -11,7 +11,7 @@ export const Matchers = {
   amazon: [
     {
       match: 'amazon?',
-      params: ['m', 'th', 'psc', 'tag', 'ascsubtag', 'pf*', 'ref']
+      params: ['m', 'th', 'psc', 'tag', 'ascsubtag', 'pf*', 'ref', 'keywords', 'qid', 'sr']
     },
     {
       match: /.*?amazon\..*?\/.*?\/dp\//i,
